@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -14,81 +15,81 @@
 
 namespace BinarySerialization{
 
-template<typename T>
-void serialize(const T& value, std::ostream os);
+// // a common interface
+// template<typename T>
+// void serialize(const T& value, std::ostream os);
 
-template<typename T>
-void deserialize(T& value, std::istream is);
+// // a common interface
+// template<typename T>
+// void deserialize(T& value, std::istream is);
 
 // serialize for arithmetic
 template<typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, void>::type
-serialize(const T& value, std::ostream os) {
+serialize(const T& value, std::ostream& os) {
     os.write(reinterpret_cast<const char*>(&value), sizeof(T));
 }
 
 // deserialize for arithmetic
 template<typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, void>::type
-deserialize(T& value, std::istream is) {
+deserialize(T& value, std::istream& is) {
     is.read(reinterpret_cast<char *>(&value), sizeof(T));
 }
 
 // serialize for string
-template<>
-void serialize(const std::string& value, std::ostream os) {
+void serialize(const std::string& value, std::ostream& os) {
     size_t size = value.size();
     os.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
     os.write(value.c_str(), size);
 }
 
 // deserialize for string
-template<>
-void deserialize(std::string& value, std::istream is) {
+void deserialize(std::string& value, std::istream& is) {
     size_t size;
-    is.read(reinterpret_cast<char *>(size), sizeof(size_t));
+    is.read(reinterpret_cast<char *>(&size), sizeof(size_t));
     value.resize(size);
     is.read(&value[0], size);
 }
 
 // serialize for vector
 template<typename T>
-void serialize(const std::vector<T>& vec, std::ostream os) {
+void serialize(const std::vector<T>& vec, std::ostream& os) {
     size_t size = vec.size();
     os.write(reinterpret_cast<const char *>(&size), sizeof(size_t));
-    for (const auto element : vec) {
+    for (const auto& element : vec) {
         serialize(element, os);
     }
 }
 
 // deserialize for vector
 template<typename T>
-void deserialize(std::vector<T>& vec, std::istream is) {
+void deserialize(std::vector<T>& vec, std::istream& is) {
     size_t size;
     is.read(reinterpret_cast<char *>(&size), sizeof(size_t));
     vec.resize(size);
-    for (auto element : vec) {
+    for (auto& element : vec) {
         deserialize(element, is);
     }
 }
 
 // serialize for pair
 template<typename K, typename V>
-void serialize(const std::pair<K, V>& pair, std::ostream os) {
+void serialize(const std::pair<K, V>& pair, std::ostream& os) {
     serialize(pair.first, os);
     serialize(pair.second, os);
 }
 
 // deserialize for pair
 template<typename K, typename V>
-void deserialize(std::pair<K, V>& pair, std::istream is) {
+void deserialize(std::pair<K, V>& pair, std::istream& is) {
     deserialize(pair.first, is);
     deserialize(pair.second, is);
 }
 
 // serialize for map
 template<typename K, typename V>
-void serialize(const std::map<K, V>& map, std::ostream os) {
+void serialize(const std::map<K, V>& map, std::ostream& os) {
     size_t size = map.size();
     os.write(reinterpret_cast<const char *>(&size), sizeof(size_t));
     for (const auto element : map) {
@@ -98,46 +99,51 @@ void serialize(const std::map<K, V>& map, std::ostream os) {
 
 // deserialize for map
 template<typename K, typename V>
-void deserialize(std::map<K, V>& map, std::istream is) {
+void deserialize(std::map<K, V>& map, std::istream& is) {
     size_t size;
     is.read(reinterpret_cast<char *>(&size), sizeof(size_t));
-    map.resize(size);
-    for (auto element : map) {
+    map.clear();
+    std::pair<K, V> element;
+    for (size_t i = 0; i < size; i++) {
         deserialize(element, is);
+        map.insert(element);
     }
 }
 
 // serialize for list
 template<typename T>
-void serialize(const std::list<T>& lst, std::ostream os) {
+void serialize(const std::list<T>& lst, std::ostream& os) {
     size_t size = lst.size();
     os.write(reinterpret_cast<const char *>(&size), sizeof(size_t));
-    for (const auto element : lst) {
+    for (const auto& element : lst) {
         serialize(element, os);
     }
 }
 
 // deserialize for list
 template<typename T>
-void deserialize(std::list<T> lst, std::istream is) {
+void deserialize(std::list<T>& lst, std::istream& is) {
     size_t size;
     is.read(reinterpret_cast<char *>(&size), sizeof(size_t));
     lst.resize(size);
-    for (auto element : lst) {
+    for (auto& element : lst) {
         deserialize(element, is);
     }
 }
 
 // serialize for set
 template<typename T>
-void serialize(const std::set<T>& st, std::ostream os) {
+void serialize(const std::set<T>& st, std::ostream& os) {
     size_t size = st.size();
     os.write(reinterpret_cast<const char *>(&size), sizeof(size_t));
+    for (const auto& element : st) {
+        serialize(element, os);
+    }
 }
 
 // deserialize for set
 template<typename T>
-void serialize(std::set<T>& st, std::istream is) {
+void deserialize(std::set<T>& st, std::istream& is) {
     size_t size;
     is.read(reinterpret_cast<char *>(&size), sizeof(size_t));
     for (size_t i = 0; i < size; i++) {
@@ -183,6 +189,7 @@ void serialize(const std::shared_ptr<T[]>& ptr, std::ostream& os, size_t size) {
         os.write(reinterpret_cast<const char*>(ptr.get()), size * sizeof(T));
     } else {
         throw std::runtime_error("invalid unique_ptr for serialization");
+        return ;
     }
 }
 
@@ -190,7 +197,7 @@ void serialize(const std::shared_ptr<T[]>& ptr, std::ostream& os, size_t size) {
 template<typename T>
 void deserialize(std::shared_ptr<T[]>& ptr, std::istream& is) {
     size_t size;
-    is.read(reinterpret_cast<char *>, sizeof(size_t));
+    is.read(reinterpret_cast<char *>(size), sizeof(size_t));
     ptr = std::make_unique<T[]>(size);
     ASSERT(ptr != nullptr, "unexpected error");
     is.read(reinterpret_cast<char *>(ptr.get()), size * sizeof(T));
@@ -204,6 +211,7 @@ void serialize(const std::unique_ptr<T[]>& ptr, std::ostream& os, size_t size) {
         os.write(reinterpret_cast<const char*>(ptr.get()), size * sizeof(T));
     } else {
         throw std::runtime_error("invalid shared_ptr for serialization");
+        return ;
     }
 }
 
@@ -211,7 +219,7 @@ void serialize(const std::unique_ptr<T[]>& ptr, std::ostream& os, size_t size) {
 template<typename T>
 void deserialize(std::unique_ptr<T[]>& ptr, std::istream& is) {
     size_t size;
-    is.read(reinterpret_cast<char *>, sizeof(size_t));
+    is.read(reinterpret_cast<char *>(size), sizeof(size_t));
     ptr = std::shared_ptr<T[]>(new T[size]);
     ASSERT(ptr != nullptr, "unexpected error");
     is.read(reinterpret_cast<char *>(ptr.get()), size * sizeof(T));
