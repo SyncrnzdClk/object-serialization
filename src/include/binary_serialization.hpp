@@ -6,6 +6,10 @@
 #include <set>
 #include <map>
 #include <type_traits>
+#include <memory>
+#include <cassert>
+
+#define ASSERT(expr, message) assert((expr) && (message))
 
 
 namespace BinarySerialization{
@@ -169,6 +173,48 @@ template<typename T>
 typename std::enable_if<has_deserialize<T>::value, void>::type
 deserialize(T& value, std::istream& is) {
     value.deserialize(is);
+}
+
+// serialize for unique pointers
+template<typename T>
+void serialize(const std::shared_ptr<T[]>& ptr, std::ostream& os, size_t size) {
+    if (ptr) {
+        os.write(reinterpret_cast<const char*>(size), sizeof(size_t));
+        os.write(reinterpret_cast<const char*>(ptr.get()), size * sizeof(T));
+    } else {
+        throw std::runtime_error("invalid unique_ptr for serialization");
+    }
+}
+
+// deserialize for unique pointers
+template<typename T>
+void deserialize(std::shared_ptr<T[]>& ptr, std::istream& is) {
+    size_t size;
+    is.read(reinterpret_cast<char *>, sizeof(size_t));
+    ptr = std::make_unique<T[]>(size);
+    ASSERT(ptr != nullptr, "unexpected error");
+    is.read(reinterpret_cast<char *>(ptr.get()), size * sizeof(T));
+}
+
+// serialize for shared pointers
+template<typename T>
+void serialize(const std::unique_ptr<T[]>& ptr, std::ostream& os, size_t size) {
+    if (ptr) {
+        os.write(reinterpret_cast<const char*>(size), sizeof(size_t));
+        os.write(reinterpret_cast<const char*>(ptr.get()), size * sizeof(T));
+    } else {
+        throw std::runtime_error("invalid shared_ptr for serialization");
+    }
+}
+
+// deserialize for shared pointers
+template<typename T>
+void deserialize(std::unique_ptr<T[]>& ptr, std::istream& is) {
+    size_t size;
+    is.read(reinterpret_cast<char *>, sizeof(size_t));
+    ptr = std::shared_ptr<T[]>(new T[size]);
+    ASSERT(ptr != nullptr, "unexpected error");
+    is.read(reinterpret_cast<char *>(ptr.get()), size * sizeof(T));
 }
 
 };
