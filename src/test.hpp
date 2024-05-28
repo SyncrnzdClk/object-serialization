@@ -17,21 +17,16 @@ public:
         os << "Person{name: " << person.name << ", age: " << person.age << ", height: " << person.height << "}";
         return os;
     }
+
+    void serialize(std::ostream& os) const {
+        BinarySerialization::serialize(this->name, os);
+        BinarySerialization::serialize(this->age, os);
+        BinarySerialization::serialize(this->height, os);
+    }
+
+    void deserialize(std::istream& is) {
+        BinarySerialization::deserialize(this->name, is);
+        BinarySerialization::deserialize(this->age, is);
+        BinarySerialization::deserialize(this->height, is);
+    }
 };
-
-// 序列化和反序列化函数
-namespace BinarySerialization {
-
-void serialize(const Person& person, std::ostream& os) {
-    serialize(person.name, os);
-    serialize(person.age, os);
-    serialize(person.height, os);
-}
-
-void deserialize(Person& person, std::istream& is) {
-    deserialize(person.name, is);
-    deserialize(person.age, is);
-    deserialize(person.height, is);
-}
-
-} // namespace BinarySerialization
