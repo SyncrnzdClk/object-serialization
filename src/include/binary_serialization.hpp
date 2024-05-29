@@ -15,14 +15,6 @@
 
 namespace BinarySerialization{
 
-// // a common interface
-// template<typename T>
-// void serialize(const T& value, std::ostream os);
-
-// // a common interface
-// template<typename T>
-// void deserialize(T& value, std::istream is);
-
 // serialize for arithmetic
 template<typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, void>::type

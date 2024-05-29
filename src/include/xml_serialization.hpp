@@ -195,6 +195,80 @@ void deserialize_xml(std::vector<T>& vec, const std::string& name, const std::st
     }
 }
 
+// serialize for list
+template<typename T>
+void serialize_xml(const std::list<T>& lst, const std::string& name, const std::string& filename) {
+    XMLDocument doc;
+    XMLElement* serialization;
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) { // if the file does not exist
+        serialization = doc.NewElement("serialization");
+        doc.InsertFirstChild(serialization);
+    }
+    else {
+        serialization = doc.FirstChildElement("serialization"); // try to find the root element <serialization><\serialization>
+        if (!serialization) { // insert the root element
+            serialization = doc.NewElement("serialization");
+            doc.InsertFirstChild(serialization);
+        }
+    }
+
+    // create a new element for list
+    XMLElement* std_list = doc.NewElement(name.c_str());
+
+    // create elements for the list's contents
+    for (const auto& element : lst) {
+        XMLElement* xml_element = doc.NewElement("element");
+        if constexpr (std::is_arithmetic_v<T>) xml_element->SetAttribute("val", element);
+        else if constexpr (std::is_same_v<T, std::string>) xml_element->SetAttribute("val", element.c_str());
+        else throw std::runtime_error("this type cannot be serialized");
+        std_list->InsertEndChild(xml_element);
+    }
+
+    serialization->InsertFirstChild(std_list);
+
+    doc.SaveFile(filename.c_str());
+}
+
+
+// deserialize for list
+template<typename T>
+void deserialize_xml(std::list<T>& lst, const std::string& name, const std::string& filename) {
+    XMLDocument doc;
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
+        throw std::runtime_error("file open error");
+    }
+
+    XMLElement* serialization = doc.FirstChildElement("serialization");
+
+    XMLElement* std_list;
+    std_list = serialization->FirstChildElement(name.c_str());
+    if (!std_list) {
+        throw std::runtime_error("fail to find the serialization element");
+    }
+
+    // clear the list
+    lst.resize(0);
+    
+    T value;
+    for (XMLElement* xml_element = std_list->FirstChildElement("element"); xml_element; xml_element = xml_element->NextSiblingElement()) {
+        const char* val = xml_element->Attribute("val");
+        if (!val) {
+            throw std::runtime_error("get value error");
+        }
+        if constexpr (std::is_arithmetic_v<T>) {
+            std::stringstream ss(val);
+            ss >> value;
+            if (ss.fail()) {
+                throw std::runtime_error("parsing attribute value error");
+            }
+        }
+        else if constexpr (std::is_same_v<T, std::string>) {
+            value = val;
+        }
+        lst.push_back(value);
+    }
+}
+
 template<typename K, typename V>
 void serialize_xml(const std::pair<K, V>& pair, const std::string& name, const std::string& filename) {
     XMLDocument doc;
@@ -281,6 +355,100 @@ void deserialize_xml(std::pair<K, V>& pair, const std::string& name, const std::
     else {
         throw std::runtime_error("parsing attribute value error");
     }
+}
+
+// serialize for map
+template<typename K, typename V>
+void serialize_xml(const std::map<K, V>& mp, const std::string& name, const std::string& filename) {
+    XMLDocument doc;
+    XMLElement* serialization;
+
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
+        serialization = doc.NewElement("serialization");
+        doc.InsertEndChild(serialization);
+    }
+    else {
+        serialization = doc.FirstChildElement("serialization");
+        if (!serialization) {
+            serialization = doc.NewElement("serialization");
+            doc.InsertEndChild(serialization);
+        }
+    }
+
+    XMLElement* std_map = doc.NewElement(name.c_str());
+    for (const auto& pair : mp) {
+        XMLElement* xml_pair = doc.NewElement("pair");
+        XMLElement* first = doc.NewElement("first");
+        if constexpr(std::is_arithmetic_v<K>) first->SetAttribute("val", pair.first);
+        else if constexpr(std::is_same_v<K, std::string>) first->SetAttribute("val", (pair.first).c_str());
+        else throw std::runtime_error("this type cannot be serialized");
+        
+        XMLElement* second = doc.NewElement("second");
+        if constexpr(std::is_arithmetic_v<V>) second->SetAttribute("val", pair.second);
+        else if constexpr(std::is_same_v<V, std::string>) second->SetAttribute("val", (pair.second).c_str());
+        else throw std::runtime_error("this type cannot be serialized");
+        
+        xml_pair->InsertEndChild(first);
+        xml_pair->InsertEndChild(second);
+        std_map->InsertEndChild(xml_pair);
+    }
+
+    serialization->InsertEndChild(std_map);
+    doc.SaveFile(filename.c_str());
+}
+
+// deserialize for map
+template<typename K, typename V>
+void deserialize_xml(std::map<K, V>& mp, const std::string& name, const std::string& filename) {
+    XMLDocument doc;
+    XMLElement* serialization;
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
+        throw std::runtime_error("fail to open file");
+    }
+
+    serialization = doc.FirstChildElement("serialization");
+
+    XMLElement* std_map = serialization->FirstChildElement(name.c_str());
+    mp.clear();
+    std::pair<K, V> pair;
+    for (XMLElement* xml_pair = std_map->FirstChildElement(); xml_pair; xml_pair = xml_pair->NextSiblingElement()) {
+        XMLElement* first = xml_pair->FirstChildElement("first");
+        XMLElement* second = xml_pair->FirstChildElement("second");
+        
+        const char* val1 = first->Attribute("val");
+        if constexpr (std::is_arithmetic_v<K>) {
+            std::stringstream ss1(val1);
+            ss1 >> pair.first;
+
+            if (ss1.fail()) {
+                throw std::runtime_error("parsing attribute value error");
+            }
+        }
+        else if constexpr (std::is_same_v<K, std::string>) {
+            pair.first = val1;
+        }
+        else {
+            throw std::runtime_error("parsing attribute value error");
+        }
+
+        const char* val2 = first->Attribute("val");
+        if constexpr (std::is_arithmetic_v<V>) {
+            std::stringstream ss2(val2);
+            ss2 >> pair.second;
+
+            if (ss2.fail()) {
+                throw std::runtime_error("parsing attribute value error");
+            }
+        }
+        else if constexpr (std::is_same_v<V, std::string>) {
+            pair.second = val2;
+        }
+        else {
+            throw std::runtime_error("parsing attribute value error");
+        }
+        mp.insert(pair);
+    }    
+    
 }
 
 }

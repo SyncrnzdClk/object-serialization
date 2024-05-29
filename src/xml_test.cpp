@@ -1,5 +1,5 @@
 #include "include/xml_serialization.hpp"
-#include "test.hpp"
+#include "Person.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -8,6 +8,7 @@
 #include <list>
 #include <set>
 #include <new> // std::bad_alloc
+#include <filesystem>
 
 using namespace XMLSerialization;
 
@@ -22,8 +23,8 @@ int main() {
         std::vector<std::string> vectorVarStr = {"bob and john,", "leo,", "hi,", "hello world,"};
         std::pair<int, double> pairVar = {42, 3.14};
         std::pair<std::string, double> pairStrVar = {"leo", 19.2};
-        // std::map<double, double> mapVar = {{1.1, 2.2}, {3.3, 4.4}};
-        // std::list<float> listVar = {1.1f, 2.2f, 3.3f};
+        std::map<double, double> mapVar = {{1.1, 2.2}, {3.3, 4.4}};
+        std::list<float> listVar = {1.1f, 2.2f, 3.3f};
         // std::set<int> setVar = {1, 2, 3, 4, 5};
         // Person personVar("Leo Ding", 30, 1.75);
         // std::vector<std::vector<int>> nestedVector = {{1, 2, 4}, {2, 3}, {1, 2}};
@@ -38,8 +39,8 @@ int main() {
             serialize_xml(vectorVarStr, "vector", "vectorStr.xml");
             serialize_xml(pairVar, "pair", "pair.xml");
             serialize_xml(pairStrVar, "pair", "pairStr.xml");
-            // serialize(mapVar, ofs);
-            // serialize(listVar, ofs);
+            serialize_xml(mapVar, "map", "map.xml");
+            serialize_xml(listVar, "list", "list.xml");
             // serialize(setVar, ofs);
             // serialize(personVar, ofs);
             // serialize(nestedVector, ofs);
@@ -55,8 +56,8 @@ int main() {
             std::vector<std::string> vectorVarStr2;
             std::pair<int, double> pairVar2;
             std::pair<std::string, double> pairStrVar2;
-            // std::map<double, double> mapVar2;
-            // std::list<float> listVar2;
+            std::map<double, double> mapVar2;
+            std::list<float> listVar2;
             // std::set<int> setVar2;
             // Person personVar2;
             // std::vector<std::vector<int>> nestedVector2;
@@ -69,8 +70,8 @@ int main() {
             deserialize_xml(vectorVarStr2, "vector", "vectorStr.xml");
             deserialize_xml(pairVar2, "pair", "pair.xml");
             deserialize_xml(pairStrVar2, "pair", "pairStr.xml");
-            // deserialize(mapVar2, ifs);
-            // deserialize(listVar2, ifs);
+            deserialize_xml(mapVar2, "map", "map.xml");
+            deserialize_xml(listVar2, "list", "list.xml");
             // deserialize(setVar2, ifs);
             // deserialize(personVar2, ifs);
             // deserialize(nestedVector2, ifs);
@@ -97,17 +98,17 @@ int main() {
 
             std::cout << "Deserialized pairStr: (" << pairStrVar2.first << ", " << pairStrVar2.second << ")" << std::endl;
 
-            // std::cout << "Deserialized map: ";
-            // for (const auto& [key, value] : mapVar2) {
-            //     std::cout << "{" << key << ", " << value << "} ";
-            // }
-            // std::cout << std::endl;
+            std::cout << "Deserialized map: ";
+            for (const auto& [key, value] : mapVar2) {
+                std::cout << "{" << key << ", " << value << "} ";
+            }
+            std::cout << std::endl;
 
-            // std::cout << "Deserialized list: ";
-            // for (const auto& item : listVar2) {
-            //     std::cout << item << " ";
-            // }
-            // std::cout << std::endl;
+            std::cout << "Deserialized list: ";
+            for (const auto& item : listVar2) {
+                std::cout << item << " ";
+            }
+            std::cout << std::endl;
 
             // std::cout << "Deserialized set: ";
             // for (const auto& item : setVar2) {
