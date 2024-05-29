@@ -25,7 +25,7 @@ int main() {
         std::pair<std::string, double> pairStrVar = {"leo", 19.2};
         std::map<double, double> mapVar = {{1.1, 2.2}, {3.3, 4.4}};
         std::list<float> listVar = {1.1f, 2.2f, 3.3f};
-        // std::set<int> setVar = {1, 2, 3, 4, 5};
+        std::set<int> setVar = {1, 2, 3, 4, 5};
         // Person personVar("Leo Ding", 30, 1.75);
         // std::vector<std::vector<int>> nestedVector = {{1, 2, 4}, {2, 3}, {1, 2}};
 
@@ -41,7 +41,7 @@ int main() {
             serialize_xml(pairStrVar, "pair", "pairStr.xml");
             serialize_xml(mapVar, "map", "map.xml");
             serialize_xml(listVar, "list", "list.xml");
-            // serialize(setVar, ofs);
+            serialize_xml(setVar, "set", "set.xml");
             // serialize(personVar, ofs);
             // serialize(nestedVector, ofs);
         }
@@ -58,7 +58,7 @@ int main() {
             std::pair<std::string, double> pairStrVar2;
             std::map<double, double> mapVar2;
             std::list<float> listVar2;
-            // std::set<int> setVar2;
+            std::set<int> setVar2;
             // Person personVar2;
             // std::vector<std::vector<int>> nestedVector2;
 
@@ -72,7 +72,7 @@ int main() {
             deserialize_xml(pairStrVar2, "pair", "pairStr.xml");
             deserialize_xml(mapVar2, "map", "map.xml");
             deserialize_xml(listVar2, "list", "list.xml");
-            // deserialize(setVar2, ifs);
+            deserialize_xml(setVar2, "set", "set.xml");
             // deserialize(personVar2, ifs);
             // deserialize(nestedVector2, ifs);
 
@@ -110,11 +110,11 @@ int main() {
             }
             std::cout << std::endl;
 
-            // std::cout << "Deserialized set: ";
-            // for (const auto& item : setVar2) {
-            //     std::cout << item << " ";
-            // }
-            // std::cout << std::endl;
+            std::cout << "Deserialized set: ";
+            for (const auto& item : setVar2) {
+                std::cout << item << " ";
+            }
+            std::cout << std::endl;
 
             // std::cout << "Deserialized person: " << personVar2 << std::endl;
 

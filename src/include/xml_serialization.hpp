@@ -269,6 +269,80 @@ void deserialize_xml(std::list<T>& lst, const std::string& name, const std::stri
     }
 }
 
+// serialize for set
+template<typename T>
+void serialize_xml(const std::set<T>& st, const std::string& name, const std::string& filename) {
+    XMLDocument doc;
+    XMLElement* serialization;
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) { // if the file does not exist
+        serialization = doc.NewElement("serialization");
+        doc.InsertFirstChild(serialization);
+    }
+    else {
+        serialization = doc.FirstChildElement("serialization"); // try to find the root element <serialization><\serialization>
+        if (!serialization) { // insert the root element
+            serialization = doc.NewElement("serialization");
+            doc.InsertFirstChild(serialization);
+        }
+    }
+
+    // create a new element for set
+    XMLElement* std_set = doc.NewElement(name.c_str());
+
+    // create elements for the set's contents
+    for (const auto& element : st) {
+        XMLElement* xml_element = doc.NewElement("element");
+        if constexpr (std::is_arithmetic_v<T>) xml_element->SetAttribute("val", element);
+        else if constexpr (std::is_same_v<T, std::string>) xml_element->SetAttribute("val", element.c_str());
+        else throw std::runtime_error("this type cannot be serialized");
+        std_set->InsertEndChild(xml_element);
+    }
+
+    serialization->InsertFirstChild(std_set);
+
+    doc.SaveFile(filename.c_str());
+}
+
+
+// deserialize for set
+template<typename T>
+void deserialize_xml(std::set<T>& st, const std::string& name, const std::string& filename) {
+    XMLDocument doc;
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
+        throw std::runtime_error("file open error");
+    }
+
+    XMLElement* serialization = doc.FirstChildElement("serialization");
+
+    XMLElement* std_set;
+    std_set = serialization->FirstChildElement(name.c_str());
+    if (!std_set) {
+        throw std::runtime_error("fail to find the serialization element");
+    }
+
+    // clear the set
+    st.clear();
+    
+    T value;
+    for (XMLElement* xml_element = std_set->FirstChildElement("element"); xml_element; xml_element = xml_element->NextSiblingElement()) {
+        const char* val = xml_element->Attribute("val");
+        if (!val) {
+            throw std::runtime_error("get value error");
+        }
+        if constexpr (std::is_arithmetic_v<T>) {
+            std::stringstream ss(val);
+            ss >> value;
+            if (ss.fail()) {
+                throw std::runtime_error("parsing attribute value error");
+            }
+        }
+        else if constexpr (std::is_same_v<T, std::string>) {
+            value = val;
+        }
+        st.insert(value);
+    }
+}
+
 template<typename K, typename V>
 void serialize_xml(const std::pair<K, V>& pair, const std::string& name, const std::string& filename) {
     XMLDocument doc;
