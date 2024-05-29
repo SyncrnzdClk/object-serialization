@@ -35,3 +35,6 @@
 *.bin
 *.data
 *.xml
+
+#vscode
+*/.vscode/
