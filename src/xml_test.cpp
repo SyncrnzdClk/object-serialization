@@ -1,5 +1,5 @@
-#include "include/xml_serialization.hpp"
-#include "Person.hpp"
+#include "../include/xml_serialization.hpp"
+#include "../include/Person.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -26,7 +26,7 @@ int main() {
         std::map<double, double> mapVar = {{1.1, 2.2}, {3.3, 4.4}};
         std::list<float> listVar = {1.1f, 2.2f, 3.3f};
         std::set<int> setVar = {1, 2, 3, 4, 5};
-        // Person personVar("Leo Ding", 30, 1.75);
+        Person personVar("Leo Ding", 30, 1.75);
         // std::vector<std::vector<int>> nestedVector = {{1, 2, 4}, {2, 3}, {1, 2}};
 
         // 序列化
@@ -42,8 +42,7 @@ int main() {
             serialize_xml(mapVar, "map", "map.xml");
             serialize_xml(listVar, "list", "list.xml");
             serialize_xml(setVar, "set", "set.xml");
-            // serialize(personVar, ofs);
-            // serialize(nestedVector, ofs);
+            XMLSerialization::serialize_xml(personVar, "Person", "person.xml");
         }
 
         // 反序列化
@@ -59,7 +58,7 @@ int main() {
             std::map<double, double> mapVar2;
             std::list<float> listVar2;
             std::set<int> setVar2;
-            // Person personVar2;
+            Person personVar2;
             // std::vector<std::vector<int>> nestedVector2;
 
             deserialize_xml(intVar2, "int", "int.xml");
@@ -73,8 +72,7 @@ int main() {
             deserialize_xml(mapVar2, "map", "map.xml");
             deserialize_xml(listVar2, "list", "list.xml");
             deserialize_xml(setVar2, "set", "set.xml");
-            // deserialize(personVar2, ifs);
-            // deserialize(nestedVector2, ifs);
+            XMLSerialization::deserialize_xml(personVar2, "Person", "person.xml");
 
             // // 打印反序列化后的值
             std::cout << "Deserialized int: " << intVar2 << std::endl;
@@ -116,15 +114,8 @@ int main() {
             }
             std::cout << std::endl;
 
-            // std::cout << "Deserialized person: " << personVar2 << std::endl;
+            std::cout << "Deserialized person: " << personVar2 << std::endl;
 
-            // std::cout << "Deserialized Nested Vetcor: " << std::endl;
-            // for (const auto& vec : nestedVector2) {
-            //     for (const auto item : vec) {
-            //         std::cout << item << " ";
-            //     }
-            //     std::cout << std::endl;
-            // }
         }
     } catch (const std::bad_alloc& e) {
         std::cerr << "Memory allocation failed: " << e.what() << std::endl;

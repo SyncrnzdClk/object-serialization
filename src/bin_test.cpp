@@ -1,5 +1,5 @@
-#include "include/binary_serialization.hpp"
-#include "Person.hpp"
+#include "../include/binary_serialization.hpp"
+#include "../include/Person.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -7,13 +7,13 @@
 #include <map>
 #include <list>
 #include <set>
-#include <new> // std::bad_alloc
+#include <new> 
 
 using namespace BinarySerialization;
 
 int main() {
     try {
-        // 初始化各种类型的变量
+        // initialize
         int intVar = 42;
         double doubleVar = 3.14159;
         char charVar = 'A';
@@ -26,7 +26,7 @@ int main() {
         Person personVar("Leo Ding", 30, 1.75);
         std::vector<std::vector<int>> nestedVector = {{1, 2, 4}, {2, 3}, {1, 2}};
 
-        // 序列化
+        // serialization
         {
             std::ofstream ofs("data.bin", std::ios::binary);
             if (!ofs) {
@@ -46,7 +46,7 @@ int main() {
             serialize(nestedVector, ofs);
         }
 
-        // 反序列化
+        // deserialization
         {
             std::ifstream ifs("data.bin", std::ios::binary);
             if (!ifs) {
@@ -78,7 +78,7 @@ int main() {
             deserialize(personVar2, ifs);
             deserialize(nestedVector2, ifs);
 
-            // 打印反序列化后的值
+            // print values
             std::cout << "Deserialized int: " << intVar2 << std::endl;
             std::cout << "Deserialized double: " << doubleVar2 << std::endl;
             std::cout << "Deserialized char: " << charVar2 << std::endl;
