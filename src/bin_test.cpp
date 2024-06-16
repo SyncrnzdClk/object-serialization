@@ -78,47 +78,18 @@ int main() {
             deserialize(personVar2, ifs);
             deserialize(nestedVector2, ifs);
 
-            // print values
-            std::cout << "Deserialized int: " << intVar2 << std::endl;
-            std::cout << "Deserialized double: " << doubleVar2 << std::endl;
-            std::cout << "Deserialized char: " << charVar2 << std::endl;
-            std::cout << "Deserialized string: " << stringVar2 << std::endl;
-
-            std::cout << "Deserialized vector: ";
-            for (const auto& item : vectorVar2) {
-                std::cout << item << " ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized pair: (" << pairVar2.first << ", " << pairVar2.second << ")" << std::endl;
-
-            std::cout << "Deserialized map: ";
-            for (const auto& [key, value] : mapVar2) {
-                std::cout << "{" << key << ", " << value << "} ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized list: ";
-            for (const auto& item : listVar2) {
-                std::cout << item << " ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized set: ";
-            for (const auto& item : setVar2) {
-                std::cout << item << " ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized person: " << personVar2 << std::endl;
-
-            std::cout << "Deserialized Nested Vetcor: " << std::endl;
-            for (const auto& vec : nestedVector2) {
-                for (const auto item : vec) {
-                    std::cout << item << " ";
-                }
-                std::cout << std::endl;
-            }
+            // assert values
+            ASSERT(intVar2 == intVar, "Deserialized int does not match.");
+            ASSERT(doubleVar2 == doubleVar, "Deserialized double does not match.");
+            ASSERT(charVar2 == charVar, "Deserialized char does not match.");
+            ASSERT(stringVar2 == stringVar, "Deserialized string does not match.");
+            ASSERT(vectorVar2 == vectorVar, "Deserialized vector does not match.");
+            ASSERT(pairVar2 == pairVar, "Deserialized pair does not match.");
+            ASSERT(mapVar2 == mapVar, "Deserialized map does not match.");
+            ASSERT(listVar2 == listVar, "Deserialized list does not match.");
+            ASSERT(setVar2 == setVar, "Deserialized set does not match.");
+            ASSERT(personVar2 == personVar, "Deserialized person does not match.");
+            ASSERT(nestedVector2 == nestedVector, "Deserialized nested vector does not match.");
         }
     } catch (const std::bad_alloc& e) {
         std::cerr << "Memory allocation failed: " << e.what() << std::endl;

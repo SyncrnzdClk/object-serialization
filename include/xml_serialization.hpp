@@ -20,63 +20,123 @@ using namespace tinyxml2;
 
 namespace XMLSerialization{
 
-// serialize for arithmetic
+// Serialize function for arithmetic types (excluding char)
 template<typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, void>::type
+typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T, char>::value, void>::type
 serialize_xml(const T& value, const std::string& name, const std::string& filename) {
     XMLDocument doc;
     XMLElement* serialization = nullptr;
 
-    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) { // if the file does not exist, we need to insert the root element <serialization><\serialization>
+    // Load the XML file, if it does not exist, create a new one
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
         serialization = doc.NewElement("serialization");
         doc.InsertFirstChild(serialization);
-    }
-    else {
-        serialization = doc.FirstChildElement("serialization"); // try to find the root element <serialization><\serialization>
-        if (!serialization) { // insert the root element
+    } else {
+        serialization = doc.FirstChildElement("serialization");
+        if (!serialization) {
             serialization = doc.NewElement("serialization");
             doc.InsertFirstChild(serialization);
         }
     }
     
-    // create the arithmetic element
+    // Create a new element with the provided name and set its value attribute
     XMLElement* arithmetic = doc.NewElement(name.c_str());
     arithmetic->SetAttribute("val", value);
     serialization->InsertEndChild(arithmetic);
-
-    // save the contents in to the file
     doc.SaveFile(filename.c_str());
 }
 
-// deserialize for arithmetic
+// Serialize function for char type
 template<typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, void>::type
-deserialize_xml (T& value, const std::string& name, const std::string& filename) {
+typename std::enable_if<std::is_same<T, char>::value, void>::type
+serialize_xml(const T& value, const std::string& name, const std::string& filename) {
+    XMLDocument doc;
+    XMLElement* serialization = nullptr;
+
+    // Load the XML file, if it does not exist, create a new one
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
+        serialization = doc.NewElement("serialization");
+        doc.InsertFirstChild(serialization);
+    } else {
+        serialization = doc.FirstChildElement("serialization");
+        if (!serialization) {
+            serialization = doc.NewElement("serialization");
+            doc.InsertFirstChild(serialization);
+        }
+    }
+    
+    // Create a new element with the provided name and set its value attribute as a string of length 1
+    XMLElement* charElement = doc.NewElement(name.c_str());
+    charElement->SetAttribute("val", std::string(1, value).c_str());
+    serialization->InsertEndChild(charElement);
+    doc.SaveFile(filename.c_str());
+}
+
+// Deserialize function for arithmetic types (excluding char)
+template<typename T>
+typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T, char>::value, void>::type
+deserialize_xml(T& value, const std::string& name, const std::string& filename) {
     XMLDocument doc;
 
-    // if the file does not exist, return
+    // Load the XML file, throw an error if it cannot be opened
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
-        throw std::runtime_error("file open error");
+        throw std::runtime_error("File open error");
     }
 
+    // Locate the serialization element, throw an error if not found
     XMLElement* serialization = doc.FirstChildElement("serialization");
     if (!serialization) {
-        throw std::runtime_error("fail to find serialization element.");
+        throw std::runtime_error("Serialization element not found.");
     } 
 
-    // find the first matched element
+    // Locate the specific element by name and retrieve its value attribute
     XMLElement* arithmetic = serialization->FirstChildElement(name.c_str());
     const char* val = arithmetic->Attribute("val");
     if (!val) {
-        throw std::runtime_error("get value error");
+        throw std::runtime_error("Value retrieval error");
     }
 
+    // Convert the string attribute value to the appropriate type
     std::stringstream ss(val);
     ss >> value;
     if (ss.fail()) {
-        throw std::runtime_error("parsing attribute value error.");
+        throw std::runtime_error("Parsing attribute value error.");
     }
 }
+
+// Deserialize function for char type
+template<typename T>
+typename std::enable_if<std::is_same<T, char>::value, void>::type
+deserialize_xml(T& value, const std::string& name, const std::string& filename) {
+    XMLDocument doc;
+
+    // Load the XML file, throw an error if it cannot be opened
+    if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
+        throw std::runtime_error("File open error");
+    }
+
+    // Locate the serialization element, throw an error if not found
+    XMLElement* serialization = doc.FirstChildElement("serialization");
+    if (!serialization) {
+        throw std::runtime_error("Serialization element not found.");
+    } 
+
+    // Locate the specific element by name and retrieve its value attribute
+    XMLElement* charElement = serialization->FirstChildElement(name.c_str());
+    const char* val = charElement->Attribute("val");
+    if (!val) {
+        throw std::runtime_error("Value retrieval error");
+    }
+
+    // Ensure the length of the retrieved string is exactly 1
+    if (strlen(val) != 1) {
+        throw std::runtime_error("Invalid char length");
+    }
+
+    // Assign the first character of the string to the value
+    value = val[0];
+}
+
 
 // serialize for string
 void serialize_xml(const std::string& value, const std::string& name, const std::string& filename) {

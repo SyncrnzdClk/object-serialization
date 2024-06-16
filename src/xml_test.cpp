@@ -27,7 +27,6 @@ int main() {
         std::list<float> listVar = {1.1f, 2.2f, 3.3f};
         std::set<int> setVar = {1, 2, 3, 4, 5};
         Person personVar("Leo Ding", 30, 1.75);
-        // std::vector<std::vector<int>> nestedVector = {{1, 2, 4}, {2, 3}, {1, 2}};
 
         // 序列化
         {
@@ -59,7 +58,6 @@ int main() {
             std::list<float> listVar2;
             std::set<int> setVar2;
             Person personVar2;
-            // std::vector<std::vector<int>> nestedVector2;
 
             deserialize_xml(intVar2, "int", "int.xml");
             deserialize_xml(doubleVar2, "double", "double.xml");
@@ -74,48 +72,19 @@ int main() {
             deserialize_xml(setVar2, "set", "set.xml");
             XMLSerialization::deserialize_xml(personVar2, "Person", "person.xml");
 
-            // // 打印反序列化后的值
-            std::cout << "Deserialized int: " << intVar2 << std::endl;
-            std::cout << "Deserialized double: " << doubleVar2 << std::endl;
-            std::cout << "Deserialized char: " << charVar2 << std::endl;
-            std::cout << "Deserialized string: " << stringVar2 << std::endl;
-
-            std::cout << "Deserialized vector: ";
-            for (const auto& item : vectorVar2) {
-                std::cout << item << " ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized vector(string): ";
-            for (const auto& item : vectorVarStr2) {
-                std::cout << item << " ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized pair: (" << pairVar2.first << ", " << pairVar2.second << ")" << std::endl;
-
-            std::cout << "Deserialized pairStr: (" << pairStrVar2.first << ", " << pairStrVar2.second << ")" << std::endl;
-
-            std::cout << "Deserialized map: ";
-            for (const auto& [key, value] : mapVar2) {
-                std::cout << "{" << key << ", " << value << "} ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized list: ";
-            for (const auto& item : listVar2) {
-                std::cout << item << " ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized set: ";
-            for (const auto& item : setVar2) {
-                std::cout << item << " ";
-            }
-            std::cout << std::endl;
-
-            std::cout << "Deserialized person: " << personVar2 << std::endl;
-
+            // 使用断言来验证反序列化后的值
+            ASSERT(intVar2 == intVar, "Deserialized int does not match.");
+            ASSERT(doubleVar2 == doubleVar, "Deserialized double does not match.");
+            ASSERT(charVar2 == charVar, "Deserialized char does not match.");
+            ASSERT(stringVar2 == stringVar, "Deserialized string does not match.");
+            ASSERT(vectorVar2 == vectorVar, "Deserialized vector does not match.");
+            ASSERT(vectorVarStr2 == vectorVarStr, "Deserialized vector of strings does not match.");
+            ASSERT(pairVar2 == pairVar, "Deserialized pair does not match.");
+            ASSERT(pairStrVar2 == pairStrVar, "Deserialized pair of string and double does not match.");
+            ASSERT(mapVar2 == mapVar, "Deserialized map does not match.");
+            ASSERT(listVar2 == listVar, "Deserialized list does not match.");
+            ASSERT(setVar2 == setVar, "Deserialized set does not match.");
+            ASSERT(personVar2 == personVar, "Deserialized person does not match.");
         }
     } catch (const std::bad_alloc& e) {
         std::cerr << "Memory allocation failed: " << e.what() << std::endl;

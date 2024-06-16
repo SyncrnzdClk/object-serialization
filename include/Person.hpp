@@ -12,12 +12,17 @@ public:
     double height;
 
     Person() : name(""), age(0), height(0.0) {}
-    Person(std::string name, int age, double height) : name(name), age(age), height(height) {}
+    Person(std::string name, int age, double height) : name(std::move(name)), age(age), height(height) {}
 
-    // overload the << operator
+    // Overload the << operator
     friend std::ostream& operator<<(std::ostream& os, const Person& person) {
         os << "Person{name: " << person.name << ", age: " << person.age << ", height: " << person.height << "}";
         return os;
+    }
+
+    // Overload the == operator
+    bool operator==(const Person& other) const {
+        return name == other.name && age == other.age && height == other.height;
     }
 
     void serialize(std::ostream& os) const {
